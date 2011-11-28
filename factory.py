@@ -23,7 +23,6 @@ class robo_piece:
         return str(self.width) + "px, " + str(self.height) + "px"
 
 class robot:
-
     head = robo_piece()
     arms = robo_piece()
     body = robo_piece()
@@ -82,16 +81,10 @@ class robot:
         if (size[x] - self.body.width - (self.arms.width * 2) >= 6) and random.choice([True, False]):
             self.hands = True
         
-        
-        
     def __str__(self):
         return 'head: ' + str(self.head) + '\nbody: ' + str(self.body) + '\narms: ' + str(self.arms) + '\nlegs: ' + str(self.legs) + '\nhands: ' + str(self.hands) + '\neyes: ' + str(self.eyes)
 
-    def __test__(self):
-        # check if no robo_pieces have negative values
-        i=0
-
-    def draw(self, colors):
+    def draw(self, colors, **kwargs):
         """ init """
         canvas = Image.new('RGB', self.size, 'rgb(220,220,220)')
         draw = ImageDraw.Draw(canvas)
@@ -128,6 +121,14 @@ class robot:
         draw.point((self.eyes.right, self.eyes.bottom - 1 ), fill=colors[0])
         draw.point((self.eyes.right, self.eyes.top ), fill=colors[1])
         
+        """ palette"""
+        if 'palette' in kwargs and kwargs['palette'] is True:
+            draw.rectangle([(0,0),(1,1)], fill=colors[0])
+            draw.rectangle([(0,2),(1,3)], fill=colors[1])
+            draw.rectangle([(0,4),(1,5)], fill=colors[2])
+            draw.rectangle([(0,6),(1,7)], fill=colors[3])
+            draw.rectangle([(0,8),(1,9)], fill=colors[4])        
+        
         del draw
         return canvas
 
@@ -137,15 +138,24 @@ def randcolor():
 def randcolors():
     colors = ['','','','','']
     colors[0] = 'rgb(0,0,0)'
-    colors[1] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(0, 100)) + '%, ' + str(random.randrange(20, 40)) + '%)'
-    colors[2] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(0, 100)) + '%, ' + str(random.randrange(40, 60)) + '%)'
-    colors[3] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(0, 100)) + '%, ' + str(random.randrange(60, 80)) + '%)'
-    colors[4] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(0, 100)) + '%, ' + str(random.randrange(80, 100)) + '%)'    
+    colors[1] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(20, 40)) + '%)'
+    colors[2] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(40, 60)) + '%)'
+    colors[3] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(60, 80)) + '%)'
+    colors[4] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(80, 100)) + '%)'    
     return colors
 
-
-def batch_print(count):
-    for i in range(0, count):
+# prints the given number of robots side by side in 1 image
+def stitch_print(count, size):
+    c = Image.new('RGB', (size[x] * count, size[y]), 'rgb(220,220,220)')
+    for i in range(count):
+        r = robot(size)
+        c.paste(r.draw(randcolors()), (size[x]* i,0))
+    c.show()
+    c.save('robot.png')
+    
+# prints the given number of robots in individual images
+def batch_print(count, size):
+    for i in range(count):
         r = robot(size)
         #print str(r) + "\n"
         c = r.draw(randcolors())
@@ -155,7 +165,7 @@ def batch_print(count):
 count = 1
 if len(sys.argv) >= 2: 
     count = int(sys.argv[1])
-batch_print(count)
+stitch_print(count, size)
 
     
 
