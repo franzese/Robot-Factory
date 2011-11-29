@@ -11,27 +11,37 @@ x, y = 0, 1
 
 
 
-class robo_piece:
-    width = 0
-    height = 0
-    left = 0
-    right = 0
-    bottom = 0
-    top = 0
+class robo_piece: #http://blog.fedecarg.com/2008/08/17/no-need-for-setget-methods-in-python/
+    width = 0 #should be property
+    height = 0 #should be property
+    left = 0 #should be property
+    right = 0 #should be property
+    bottom = 0 #should be property
+    top = 0 #should be method
 
     def __str__(self):
         return str(self.width) + "px, " + str(self.height) + "px"
+        
+# experimental object
+class robo_accessory(robo_piece):
+    select = 0
 
 class robot:
     head = robo_piece()
     arms = robo_piece()
     body = robo_piece()
     legs = robo_piece()
-    eyes = robo_piece()
+    eyes = robo_accessory()
+    tenna = robo_accessory()
+    count_eyes = 3
+    count_tenna = 5 # 4 different antennaes
+    
     
     def __init__(self, size):
         """ random sizes """
         maxheight = int(math.ceil(size[y]/3.0)) #maximum height is 1/3rd of the canvas
+        height = 0
+        
         self.size = size
         
         self.arms.width = random.randint(2,3)
@@ -47,6 +57,14 @@ class robot:
 
         self.eyes.width = random.randrange(4, self.head.width - 3, 2)
         self.eyes.height = 3
+        self.eyes.select = random.randrange(self.count_eyes)
+        
+        if size[y] - self.body.height - self.legs.height - self.head.height + 1 >= 4:
+            self.tenna.width = random.randrange(4, self.head.width + 1, 2)
+            self.tenna.height = size[y] - self.body.height - self.legs.height - self.head.height + 1
+            self.tenna.select = random.randrange(1, self.count_tenna)
+        else:
+            self.tenna.select = 0
 
         """ additional calcs """
         self.arms.height = self.size[y] - self.legs.height - self.body.height + int(math.ceil(self.body.height/2))
@@ -74,19 +92,18 @@ class robot:
         else:
             self.eyes.bottom = self.head.bottom - 2
             self.eyes.top = self.head.top + 2
-        
-        """ accessories """
-        self.hands = False
-        self.antenna = False
-        if (size[x] - self.body.width - (self.arms.width * 2) >= 6) and random.choice([True, False]):
-            self.hands = True
+            
+        self.tenna.left = int(round((self.size[x] - self.tenna.width)/2))
+        self.tenna.right = self.tenna.left + self.tenna.width - 1
+        self.tenna.bottom = self.head.top - 1
+        self.tenna.top = self.tenna.bottom - self.tenna.height + 1
         
     def __str__(self):
         return 'head: ' + str(self.head) + '\nbody: ' + str(self.body) + '\narms: ' + str(self.arms) + '\nlegs: ' + str(self.legs) + '\nhands: ' + str(self.hands) + '\neyes: ' + str(self.eyes)
 
     def draw(self, colors, **kwargs):
         """ init """
-        canvas = Image.new('RGB', self.size, 'rgb(220,220,220)')
+        canvas = Image.new('RGB', self.size, 'rgb(255,255,255)')
         draw = ImageDraw.Draw(canvas)
         alpha = Image.new('L', self.size, 0)
 
@@ -113,15 +130,77 @@ class robot:
         draw.line([self.head.left + 2, self.head.top + 1, self.head.right - 1, self.head.top + 1], fill=colors[4])
         draw.line([self.head.left + 1, self.head.top + 2, self.head.left + 1, self.head.bottom - 1], fill=colors[3])
         
-        """ eyes """
-        draw.point((self.eyes.left, self.eyes.bottom), fill=colors[3])
-        draw.point((self.eyes.left, self.eyes.bottom - 1 ), fill=colors[0])
-        draw.point((self.eyes.left, self.eyes.top ), fill=colors[1])  
-        draw.point((self.eyes.right, self.eyes.bottom), fill=colors[3])
-        draw.point((self.eyes.right, self.eyes.bottom - 1 ), fill=colors[0])
-        draw.point((self.eyes.right, self.eyes.top ), fill=colors[1])
+        """ eyes - 3 selections @ 100%"""
+        if self.eyes.select is 0:
+            draw.point((self.eyes.left, self.eyes.bottom), fill=colors[3])
+            draw.point((self.eyes.left, self.eyes.bottom - 1 ), fill=colors[0])
+            draw.point((self.eyes.left, self.eyes.top ), fill=colors[1])  
+            draw.point((self.eyes.right, self.eyes.bottom), fill=colors[3])
+            draw.point((self.eyes.right, self.eyes.bottom - 1 ), fill=colors[0])
+            draw.point((self.eyes.right, self.eyes.top ), fill=colors[1])
+        elif self.eyes.select is 1:
+            draw.point((self.eyes.left, self.eyes.bottom), fill=colors[1])
+            draw.point((self.eyes.left, self.eyes.bottom - 1 ), fill=colors[0])
+            draw.point((self.eyes.left, self.eyes.top ), fill=colors[3])  
+            draw.point((self.eyes.right, self.eyes.bottom), fill=colors[1])
+            draw.point((self.eyes.right, self.eyes.bottom - 1 ), fill=colors[0])
+            draw.point((self.eyes.right, self.eyes.top ), fill=colors[3])
+        elif self.eyes.select is 2: # and self.eyes.width <= 4 :
+            draw.line([(self.eyes.left, self.eyes.bottom - 1),(self.eyes.left + 1, self.eyes.bottom - 1)], fill=colors[0])
+            draw.line([(self.eyes.left, self.eyes.bottom),(self.eyes.left + 1, self.eyes.bottom)], fill=colors[3])
+            draw.line([(self.eyes.right, self.eyes.bottom - 1),(self.eyes.right - 1, self.eyes.bottom - 1)], fill=colors[0])
+            draw.line([(self.eyes.right, self.eyes.bottom),(self.eyes.right - 1, self.eyes.bottom)], fill=colors[3])
+
+        """ antenna - 2 selections @ 40% """
+        prob = 0.6
+        while random.random() < prob and self.tenna.select is not 0 and self.tenna.height >= 4: # and has at least 4px of space
+            if self.tenna.select is 1:
+                if self.tenna.width is self.head.width:
+                    self.tenna.width -= 2
+                    self.tenna.left += 1
+                    self.tenna.right -= 1
+                self.tenna.height = min(4, self.tenna.height)
+                self.tenna.top = self.tenna.bottom - self.tenna.height + 1
+                draw.line([(self.tenna.left, self.tenna.bottom),(self.tenna.left, self.tenna.bottom - self.tenna.height + 1)], fill=colors[0])
+                draw.point((self.tenna.left, self.tenna.bottom - self.tenna.height + 2), fill=colors[3])
+                draw.line([(self.tenna.right, self.tenna.bottom),(self.tenna.right, self.tenna.bottom  - self.tenna.height + 1)], fill=colors[0])        
+                draw.point((self.tenna.right, self.tenna.bottom - self.tenna.height + 2), fill=colors[3])
+                break
+            elif self.tenna.select is 2:
+                self.tenna.height = min(4, self.tenna.height)
+                self.tenna.top = self.tenna.bottom - self.tenna.height + 1
+                draw.line([(self.head.right - 1, self.tenna.bottom),(self.head.right - 1, self.tenna.top)], fill=colors[0])
+                break
+            elif self.tenna.select is 3:
+                self.tenna.height = min(2, self.tenna.height)
+                self.tenna.top = self.tenna.bottom - self.tenna.height + 1
+                draw.line([(self.head.left, self.tenna.bottom),(self.head.left, self.tenna.top)], fill=colors[0])
+                break
+            elif self.tenna.select is 4: # rejection constraints
+                if self.head.width >= 10:
+                    if self.head.width >= 12:
+                        self.tenna.width = random.choice((10,12))
+                    else:
+                        self.tenna.width = 10
+                    self.tenna.height = 3
+                    self.tenna.left = int(round((self.size[x] - self.tenna.width)/2))
+                    self.tenna.right = self.tenna.left + self.tenna.width - 1
+                    self.tenna.bottom = self.head.top - 1
+                    self.tenna.top = self.tenna.bottom - self.tenna.height + 1
+                    draw.line([(self.tenna.left,self.tenna.bottom),(self.tenna.left, self.tenna.top)], fill=colors[0])
+                    draw.line([(self.tenna.right,self.tenna.bottom),(self.tenna.right, self.tenna.top)], fill=colors[0])
+                    draw.point((self.tenna.left + self.tenna.width/2 - 1, self.tenna.top), fill=colors[2])
+                    draw.point((self.tenna.left + self.tenna.width/2 , self.tenna.top + 1), fill=colors[2])
+                    draw.point((self.tenna.left + self.tenna.width/2 - 2, self.tenna.top), fill=colors[3])
+                    draw.point((self.tenna.left + self.tenna.width/2 - 1, self.tenna.top - 1), fill=colors[3])
+                    draw.point((self.tenna.left + self.tenna.width/2 + 1, self.tenna.top), fill=colors[3])
+                    break
+                else:
+                    self.tenna.select = random.randrange(1, self.count_tenna)
+                    continue
+                    
         
-        """ palette"""
+        """ optional keyword arguments """
         if 'palette' in kwargs and kwargs['palette'] is True:
             draw.rectangle([(0,0),(1,1)], fill=colors[0])
             draw.rectangle([(0,2),(1,3)], fill=colors[1])
@@ -132,16 +211,14 @@ class robot:
         del draw
         return canvas
 
-def randcolor():
-    return 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(0, 100)) + '%, ' + str(random.randrange(0, 100)) + '%)'
-
+# returns a list of 5 colors ordered from darkest -> lightest
 def randcolors():
     colors = ['','','','','']
     colors[0] = 'rgb(0,0,0)'
-    colors[1] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(20, 40)) + '%)'
-    colors[2] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(40, 60)) + '%)'
-    colors[3] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(60, 80)) + '%)'
-    colors[4] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(10, 100)) + '%, ' + str(random.randrange(80, 100)) + '%)'    
+    colors[1] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(25, 100)) + '%, ' + str(random.randrange(20, 40)) + '%)'
+    colors[2] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(25, 100)) + '%, ' + str(random.randrange(40, 60)) + '%)'
+    colors[3] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(25, 100)) + '%, ' + str(random.randrange(60, 80)) + '%)'
+    colors[4] = 'hsl(' + str(random.randrange(0, 360)) + ', ' + str(random.randrange(25, 100)) + '%, ' + str(random.randrange(80, 100)) + '%)'    
     return colors
 
 # prints the given number of robots side by side in 1 image
@@ -150,17 +227,16 @@ def stitch_print(count, size):
     for i in range(count):
         r = robot(size)
         c.paste(r.draw(randcolors()), (size[x]* i,0))
-    c.show()
     c.save('robot.png')
+    c.show()
     
 # prints the given number of robots in individual images
 def batch_print(count, size):
     for i in range(count):
         r = robot(size)
-        #print str(r) + "\n"
         c = r.draw(randcolors())
-        c.show()
         #c.save("robot.png")
+        c.show()
 
 count = 1
 if len(sys.argv) >= 2: 
