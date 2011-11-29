@@ -11,17 +11,40 @@ x, y = 0, 1
 
 
 
-class robo_piece: #http://blog.fedecarg.com/2008/08/17/no-need-for-setget-methods-in-python/
-    width = 0 #should be property
-    height = 0 #should be property
-    left = 0 #should be property
+class robo_piece2: #
+    __size = (0,0)
+    width = property(get_width, set_width)
+    height = property(get_height, set_height)
+    left = 0 
     right = 0 #should be property
     bottom = 0 #should be property
     top = 0 #should be method
 
+    def __init__(self, size):
+        self.__size = size
+
+    def get_width(self):
+        return self.__width
+        
+    def set_width(self, width):
+        self.__width = width
+        self.left = 
+
     def __str__(self):
         return str(self.width) + "px, " + str(self.height) + "px"
         
+        
+class robo_piece: #http://blog.fedecarg.com/2008/08/17/no-need-for-setget-methods-in-python/
+     width = 0 #should be property
+     height = 0 #should be property
+     left = 0 #should be property
+     right = 0 #should be property
+     bottom = 0 #should be property
+     top = 0 #should be method
+
+     def __str__(self):
+         return str(self.width) + "px, " + str(self.height) + "px"   
+                      
 # experimental object
 class robo_accessory(robo_piece):
     select = 0
