@@ -4,6 +4,7 @@ import Image
 import ImageDraw
 import sys
 
+***  Usage:                                          ***
 """ global vars """
 colors = ['rgb(0, 0, 0)', 'rgb(46, 76, 16)', 'rgb(96, 152, 48)', 'rgb(152, 200, 200)', 'rgb(200, 248, 152)'] #darkest to lightest
 size = (20, 32)
