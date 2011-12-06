@@ -4,7 +4,26 @@ import Image
 import ImageDraw
 import sys
 
+"""
+********************************************************
+********************************************************
+***                                                  ***
+***                                                  ***
+***  Robot Generator 3000                            ***
+***  Rik Franzese                                    ***
+***  saylo.com                                       ***
+***                                                  ***
 ***  Usage:                                          ***
+***  % factory.py <quantity> <resize>                ***
+***  % factory.py 20 2x - prints 20 robots at 200%   ***
+***  % factory.py  - prints 1 robot at 100%          ***
+***                                                  ***
+********************************************************
+********************************************************
+"""
+
+
+
 """ global vars """
 colors = ['rgb(0, 0, 0)', 'rgb(46, 76, 16)', 'rgb(96, 152, 48)', 'rgb(152, 200, 200)', 'rgb(200, 248, 152)'] #darkest to lightest
 size = (20, 32)
@@ -43,24 +62,26 @@ class robo_body:
         return str(self.width) + "px, " + str(self.height) + "px"
         
         
-class robo_piece: #http://blog.fedecarg.com/2008/08/17/no-need-for-setget-methods-in-python/
-     width = 0 #should be property
-     height = 0 #should be property
-     left = 0 #should be property
-     right = 0 #should be property
-     bottom = 0 #should be property
-     top = 0 #should be method
+class robo_piece: 
+    #needs work
+    #http://blog.fedecarg.com/2008/08/17/no-need-for-setget-methods-in-python/
+    width = 0
+    height = 0
+    left = 0
+    right = 0
+    bottom = 0
+    top = 0
 
-     def __str__(self):
-         return str(self.width) + "px, " + str(self.height) + "px"   
+    def __str__(self):
+        return str(self.width) + "px, " + str(self.height) + "px"   
                       
 class robot:
     head = robo_piece()
     arms = robo_piece()
     body = robo_piece()
     legs = robo_piece()
-    eyes = robo_accessory()
-    tenna = robo_accessory()
+    eyes = robo_piece()
+    tenna = robo_piece()
     count_eyes = 3
     count_tenna = 5 # 4 different antennaes
     
@@ -146,7 +167,7 @@ class robot:
         if self.head.width >= self.body.width:
             draw.line([(self.body.left + 2, self.body.top + 1),(self.body.right - 1, self.body.top + 1)], fill=colors[1]) #dark shading
         else:
-            draw.line([(self.body.left + 2, self.body.top + 1),(self.head.left, self.body.top + 1)], fill=colors[3]) #light shading
+            draw.line([(self.body.left + 2, self.body.top + 1),(self.head.left, self.body.top + 1)], fill=colors[4]) #light shading
             draw.line([(self.head.left + 1, self.body.top + 1),(self.body.right - 1, self.body.top + 1)], fill=colors[1]) #shadow shading
 
         """ arms """
@@ -204,7 +225,7 @@ class robot:
                 self.tenna.top = self.tenna.bottom - self.tenna.height + 1
                 draw.line([(self.head.left, self.tenna.bottom),(self.head.left, self.tenna.top)], fill=colors[0])
                 break
-            elif self.tenna.select is 4: # rejection constraints
+            elif self.tenna.select is 4:
                 if self.head.width >= 10:
                     if self.head.width >= 12:
                         self.tenna.width = random.choice((10,12))
@@ -250,27 +271,36 @@ def randcolors():
     return colors
 
 # prints the given number of robots side by side in 1 image
-def stitch_print(count, size):
+def stitch_print(count, size, **kwargs):
     c = Image.new('RGB', (size[x] * count, size[y]), 'rgb(220,220,220)')
     for i in range(count):
         r = robot(size)
         c.paste(r.draw(randcolors()), (size[x]* i,0))
-    c.save('robot.png')
-    c.show()
+    return c
+    
     
 # prints the given number of robots in individual images
 def batch_print(count, size):
     for i in range(count):
         r = robot(size)
         c = r.draw(randcolors())
-        #c.save("robot.png")
-        c.show()
+    return c
 
-count = 1
+count, factor = 1, 1
 if len(sys.argv) >= 2: 
-    count = int(sys.argv[1])
-stitch_print(count, size)
+    count = int(sys.argv[1])    
+    if len(sys.argv) >= 3: 
+        # validate factor
+        i = str(sys.argv[2]).find('x')
+        if i is (len(str(sys.argv[2])) - 1):
+            factor = int(str(sys.argv[2]).split('x')[0])
+        
+img = stitch_print(count, size)
+if factor > 1:
+    img = img.resize((img.size[x] * factor, img.size[y] * factor), Image.NEAREST )
 
+img.save('robot.png')
+img.show()
     
 
     
