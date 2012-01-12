@@ -26,7 +26,7 @@ import sys
 
 """ global vars """
 colors = ['rgb(0, 0, 0)', 'rgb(46, 76, 16)', 'rgb(96, 152, 48)', 'rgb(152, 200, 200)', 'rgb(200, 248, 152)'] #darkest to lightest
-size = (20, 32)
+size = (20, 30)
 x, y = 0, 1
 
 
@@ -286,21 +286,23 @@ def batch_print(count, size):
         c = r.draw(randcolors())
     return c
 
+# get command line arguments
 count, factor = 1, 1
 if len(sys.argv) >= 2: 
-    count = int(sys.argv[1])    
+    count = int(sys.argv[1])
     if len(sys.argv) >= 3: 
         # validate factor
         i = str(sys.argv[2]).find('x')
         if i is (len(str(sys.argv[2])) - 1):
             factor = int(str(sys.argv[2]).split('x')[0])
         
-img = stitch_print(count, size)
-if factor > 1:
-    img = img.resize((img.size[x] * factor, img.size[y] * factor), Image.NEAREST )
+if count > 0:
+    img = stitch_print(count, size)
+    if factor > 1:
+        img = img.resize((img.size[x] * factor, img.size[y] * factor), Image.NEAREST )
 
-img.save('robot.png')
-img.show()
+    img.save('robot.png')
+    img.show()
     
 
     
