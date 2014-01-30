@@ -11,7 +11,6 @@ import sys
 ***                                                  ***
 ***  Robot Generator 3000                            ***
 ***  Rik Franzese                                    ***
-***  saylo.com                                       ***
 ***                                                  ***
 ***  Usage:                                          ***
 ***  % factory.py <quantity> <resize>                ***
