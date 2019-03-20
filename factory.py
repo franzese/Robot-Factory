@@ -9,8 +9,8 @@ import sys
 ********************************************************
 ***                                                  ***
 ***                                                  ***
-***  Robot Generator 3000                            ***
-***  Rik Franzese                                    ***
+***  Robot Factory                                   ***
+***  @franzese                                       ***
 ***                                                  ***
 ***  Usage:                                          ***
 ***  % factory.py <quantity> <resize>                ***
